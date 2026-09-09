@@ -1,0 +1,20 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\smsas\\voice-clone-detection\\venv\\Scripts\\python.exe",
+  "python.interpreterPath": "C:\\Users\\smsas\\voice-clone-detection\\venv\\Scripts\\python.exe",
+  "python.analysis.extraPaths": [
+    "C:/Users/smsas/voice-clone-detection/venv/Lib/site-packages",
+    "C:/Users/smsas/voice-clone-detection/ml-model/src",
+    "C:/Users/smsas/voice-clone-detection/backend",
+    "C:/Users/smsas/voice-clone-detection/scripts"
+  ],
+  "python.autoComplete.extraPaths": [
+    "C:/Users/smsas/voice-clone-detection/venv/Lib/site-packages",
+    "C:/Users/smsas/voice-clone-detection/ml-model/src",
+    "C:/Users/smsas/voice-clone-detection/backend",
+    "C:/Users/smsas/voice-clone-detection/scripts"
+  ],
+  "python.terminal.activateEnvironment": true,
+  "python.envFile": "${workspaceFolder}/.env",
+  "css.lint.compatibleVendorPrefixes": "ignore",
+  "css.lint.vendorPrefix": "ignore"
+}

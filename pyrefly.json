@@ -1,0 +1,11 @@
+{
+  "python": {
+    "interpreter": "C:\\Users\\smsas\\voice-clone-detection\\venv\\Scripts\\python.exe",
+    "search_paths": [
+      "C:\\Users\\smsas\\voice-clone-detection\\venv\\Lib\\site-packages",
+      "C:\\Users\\smsas\\voice-clone-detection\\ml-model\\src",
+      "C:\\Users\\smsas\\voice-clone-detection\\backend",
+      "C:\\Users\\smsas\\voice-clone-detection\\scripts"
+    ]
+  }
+}

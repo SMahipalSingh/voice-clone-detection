@@ -1,0 +1,17 @@
+{
+  "venvPath": "C:\\Users\\smsas\\voice-clone-detection",
+  "venv": "venv",
+  "include": [
+    "backend",
+    "ml-model",
+    "scripts"
+  ],
+  "extraPaths": [
+    "C:/Users/smsas/voice-clone-detection/venv/Lib/site-packages",
+    "C:/Users/smsas/voice-clone-detection/ml-model/src",
+    "C:/Users/smsas/voice-clone-detection/backend",
+    "C:/Users/smsas/voice-clone-detection/scripts"
+  ],
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false
+}

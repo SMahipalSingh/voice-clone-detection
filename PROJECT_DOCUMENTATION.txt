@@ -1,0 +1,284 @@
+================================================================================
+VOICESHIELD: AI VOICE CLONE & DEEPFAKE DETECTION PLATFORM
+Complete System Architecture, Design Specification & DFD (Level 0 - 1)
+================================================================================
+
+1. EXECUTIVE PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+VoiceShield is an enterprise-grade cyber-forensic platform designed to detect 
+AI-synthesized voice clones, commercial Text-to-Speech (TTS), and physical replay 
+attacks in real-time, while establishing an immutable, tamper-evident SHA-256 
+Blockchain Audit Ledger for every forensic scan.
+
+The Core Problem Solved:
+* Generative Voice Clones (ElevenLabs, RVC, VALL-E): Highly realistic vocal 
+  duplication used in CEO fraud, banking authorization bypass, and social 
+  engineering.
+* Commercial Neural TTS (Google Cloud, Amazon Polly, OpenAI): Clean synthetic 
+  speech designed to fool human listeners and standard classifiers.
+* Acoustic Spoofing & Replay (ASVspoof Attacks): Recorded human audio played 
+  back through loudspeakers to spoof biometric voiceprint systems.
+* Chain-of-Custody & Auditability: Need for cryptographically verifiable, 
+  non-repudiable proof that an audio file was scanned, timestamped, and unaltered.
+
+
+2. TECHNOLOGY STACK & FRAMEWORKS
+--------------------------------------------------------------------------------
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Layer / Subsystem  | Technologies & Libraries           | Purpose & Key Responsibilities                                |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Frontend UI / UX   | React 18, Vite, Vanilla CSS,       | Ultra-responsive glassmorphic cyber-dashboard, native Web     |
+|                    | Lucide Icons                       | Audio API visualizers, dynamic SVG threat gauge.              |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Audio Ingestion    | Native Browser MediaRecorder API,  | Real-time studio microphone capture at native sample rates    |
+|                    | Web Audio API                      | (48 kHz mono PCM) and lossless audio file uploads.            |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Backend REST API   | FastAPI, Uvicorn, Pydantic,        | High-performance asynchronous REST microservice, multi-part   |
+|                    | Python 3.10+                       | form data processing, and endpoint routing.                   |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Acoustic Feature   | Librosa, SoundFile, PyDub,         | 147-dimensional forensic feature extraction, fast             |
+| Extraction         | NumPy, SciPy                       | autocorrelation F0 pitch tracking, spectral dynamics.         |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Machine Learning   | Scikit-Learn, PyTorch,             | Calibrated Soft-Voting Ensemble (Random Forest + Gradient     |
+| & AI               | Hugging Face Transformers, Joblib  | Boosting) + Pretrained Wav2Vec2 deep neural embeddings.       |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Security &         | Python hashlib (SHA-256),          | Proof-of-Integrity blockchain engine, block hashing,          |
+| Cryptography       | JSON serialization                 | Merkle-linked payload signatures.                             |
++--------------------+------------------------------------+---------------------------------------------------------------+
+| Datasets &         | ASVspoof 2021 PA Dataset,          | 2,217+ balanced multi-accent audio files (1,000 Real +        |
+| Training           | Google TTS Engine (gTTS)           | 1,000 ASV Spoof + 217 Commercial TTS).                        |
++--------------------+------------------------------------+---------------------------------------------------------------+
+
+
+3. HIGH-LEVEL SYSTEM ARCHITECTURE
+--------------------------------------------------------------------------------
+
++-----------------------------------------------------------------------------------+
+| 1. CLIENT & PRESENTATION LAYER (React 18 + Vite)                                 |
+|                                                                                   |
+|  [Audio File Uploader]   [Live Microphone Recorder]   [Dynamic Radial Threat Gauge] |
+|  [Acoustic Telemetry Grid]  [Blockchain Explorer]    [Forensic History Table]     |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         | HTTP / REST (Multipart / JSON)
+                                         v
++-----------------------------------------------------------------------------------+
+| 2. API & GATEWAY LAYER (FastAPI Backend)                                          |
+|                                                                                   |
+|  • POST /analyze-audio (Audio file ingestion & pipeline orchestration)           |
+|  • GET /ledger & GET /ledger/verify (Cryptographic integrity checks)             |
+|  • GET /history & DELETE /history (Audit history management)                      |
+|  • GET /health (System health & model telemetry)                                 |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| 3. CYBER-FORENSIC ML & ACOUSTIC ENGINE                                            |
+|                                                                                   |
+|  [Feature Extractor: 147-Dimensional Vector]                                      |
+|    - 60 MFCCs + First & Second Order Deltas                                       |
+|    - Vectorized Autocorrelation F0 Pitch Tracker (Jitter / Micro-Prosody)        |
+|    - Spectral Flatness & 7-Band Spectral Contrast                                 |
+|    - High-Frequency Spectral Rolloff & Centroid Dynamics                          |
+|                                                                                   |
+|  [Ensemble ML Models & Deep Transformers]                                         |
+|    - Calibrated Soft-Voting Classifier (Random Forest + Gradient Boosting)       |
+|    - Wav2Vec2 Deep Neural Transformer (Pretrained Audio Classification)           |
+|    - Continuous Multi-Factor Decision Fusion Engine                               |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         v
++-----------------------------------------------------------------------------------+
+| 4. CRYPTOGRAPHIC BLOCKCHAIN & AUDIT TRAIL                                         |
+|                                                                                   |
+|  • SHA-256 Audio Payload Fingerprinting                                           |
+|  • Chained Block Generation: H_i = SHA-256(i + PrevHash + Timestamp + Data)      |
+|  • Persistent Storage: ledger.json & history.json                                 |
++-----------------------------------------------------------------------------------+
+
+
+4. DATA FLOW DIAGRAMS (DFD)
+--------------------------------------------------------------------------------
+
+4.1. DFD LEVEL 0 - CONTEXT DIAGRAM
+----------------------------------
+
+   +--------------------------+
+   | Security Analyst / User  |
+   +--------------------------+
+      |               ^
+      | 1. Upload     | 3. Forensic Risk Score (0-100%)
+      |    Audio File |    Threat Verdict & Tier
+      |               |    Acoustic Frequency Telemetry
+      |               |    SHA-256 Block Certificate
+      v               |    Ledger Verification Status
+   +------------------------------------------------------------+
+   |                                                            |
+   |              0.0 VOICESHIELD SYSTEM                        |
+   |     AI Voice Clone & Deepfake Detection Platform           |
+   |                                                            |
+   +------------------------------------------------------------+
+      ^
+      | 2. Stream Live Voice Audio (WebM / WAV Blob)
+      |
+   +--------------------------+
+   | Studio Microphone Input  |
+   +--------------------------+
+
+
+4.2. DFD LEVEL 1 - DETAILED FUNCTIONAL DECOMPOSITION
+----------------------------------------------------
+
+ [ User / Analyst ]
+        |
+        | (1) Raw Audio File / Mic Stream
+        v
+ +---------------------------------------------------------------+
+ | 1.0 AUDIO INGESTION & NORMALIZATION                           |
+ |   - Decode audio container (WAV, MP3, FLAC, WebM/Opus)        |
+ |   - Resample to uniform 16 kHz Mono PCM array                 |
+ |   - Trim silence (top_db=25-30)                               |
+ +---------------------------------------------------------------+
+        |
+        | (2) Clean 16kHz PCM Array (y, sr)
+        v
+ +---------------------------------------------------------------+
+ | 2.0 147-DIM FORENSIC FEATURE EXTRACTION                       |
+ |   - 60 MFCCs (Mean, Std, Deltas, Delta-Deltas)                |
+ |   - Fast Autocorrelation F0 Pitch Tracking & Micro-Jitter     |
+ |   - Spectral Flatness & 7-Band Contrast                       |
+ |   - High-Frequency Spectral Rolloff (Hz) & Centroid           |
+ |   - Zero-Crossing Rate & RMS Energy Distribution              |
+ +---------------------------------------------------------------+
+        |
+        | (3) 147-D Feature Vector + Interpretability Metrics Dict
+        v
+ +---------------------------------------------------------------+
+ | 3.0 DUAL-ENGINE AI INFERENCE & DECISION FUSION                |
+ |   - Soft-Voting Classifier: Random Forest + Gradient Boosting |  <-- [ Data Store 1: custom_classifier.pkl ]
+ |   - Pretrained Wav2Vec2 Deep Transformer Embeddings           |
+ |   - Multi-Factor Fusion (ML Prob + Physics Telemetry)         |
+ +---------------------------------------------------------------+
+        |
+        | (4) Threat Verdict, Risk % (0.05 - 0.96), Acoustic Metrics
+        v
+ +---------------------------------------------------------------+
+ | 4.0 BLOCKCHAIN BLOCK GENERATION & SIGNING                     |
+ |   - Compute SHA-256 hash of original audio payload            |
+ |   - Generate Block (Index, Timestamp, PrevHash, Risk Score)   |
+ |   - Calculate SHA-256 Block Hash                              |
+ +---------------------------------------------------------------+
+        |                                       |
+        | (5) Minted Block Certificate          | (6) Scan Record
+        v                                       v
+ [ Data Store 2: ledger.json ]          [ Data Store 3: history.json ]
+ (Chained Immutable Audit Ledger)       (Forensic Scan History)
+        |
+        | (7) Complete Forensic & Blockchain Payload
+        v
+ +---------------------------------------------------------------+
+ | 5.0 THREAT VISUALIZATION & TELEMETRY DASHBOARD                |
+ |   - Dynamic SVG Radial Risk Gauge                             |
+ |   - Frequency Acoustic Metrics Cards                          |
+ |   - Cryptographic Block Badge & Verification Status           |
+ |   - Tactical Threat Assessment & Recommendation               |
+ +---------------------------------------------------------------+
+        |
+        | (8) Interactive UI Rendering
+        v
+ [ User / Analyst ]
+
+
+5. DETAILED SYSTEM DESIGN & SUBMODULES
+--------------------------------------------------------------------------------
+
+5.1. Audio Feature Extraction Pipeline (ml-model/src/features.py)
+-----------------------------------------------------------------
+Transforms raw audio into a 147-dimensional forensic feature vector:
+1. MFCCs + 1st/2nd Order Derivatives (60 dims): Formant transitions and 
+   spectral envelope trajectories.
+2. Vectorized Autocorrelation Pitch Tracker: Evaluates fundamental frequency (F0)
+   across 65 Hz - 500 Hz in ~15 ms and calculates cycle-to-cycle micro-jitter:
+     Jitter = [ sum(|F0(t+1) - F0(t)|) / (N-1) ] / mean(F0)
+3. Spectral Flatness (2 dims): Quantifies harmonic peak structure vs neural 
+   vocoder smoothing.
+4. 7-Band Spectral Contrast (14 dims): Formant peak-to-valley energy ratio 
+   across 7 octave sub-bands.
+5. Spectral Rolloff (2 dims): High-frequency energy cutoff (commercial TTS 
+   typically cuts off sharply at 2.8 kHz - 3.2 kHz).
+6. Zero-Crossing Rate & RMS Energy (4 dims): Organic breath dynamics and 
+   amplitude decay contours.
+
+5.2. Multi-Factor AI Inference Engine (ml-model/src/predict.py)
+---------------------------------------------------------------
+Fuses three detection signals:
+* ASVspoof + Commercial TTS Trained Classifier (Random Forest + Gradient Boosting)
+* Pretrained Wav2Vec2 Deep Transformer (MelodyMachine/Deepfake-audio-detection-V2)
+* Physical Acoustic Telemetry (Micro-Jitter, Spectral Rolloff, Flatness)
+
+Decision Fusion Matrix:
+- If strongest fake signal >= 0.50:
+    Combined Risk = (MaxFake * 0.60) + (MLScore * 0.20) + (AcousticScore * 0.20)
+- If strongest fake signal <= 0.25 (High-Confidence Authentic Human Voice):
+    Combined Risk = (MLScore * 0.45) + (NeuralScore * 0.25) + (AcousticScore * 0.30)
+- Intermediate / Borderline:
+    Combined Risk = (MLScore * 0.40) + (AcousticScore * 0.35) + (NeuralScore * 0.25)
+
+5.3. Cryptographic Blockchain Audit Ledger (backend/services/ledger_service.py)
+-------------------------------------------------------------------------------
+Every audio scan is permanently minted into an immutable, chained JSON ledger:
+* Block Payload includes:
+    - Block Index & Timestamp
+    - Audio SHA-256 Checksum
+    - Filename & File Size
+    - Verdict, Threat Tier & Risk Score (0-100%)
+    - Previous Block Hash (prev_hash)
+    - Current Block Hash (block_hash = SHA-256(index + prev_hash + timestamp + ...))
+* Cryptographic Integrity Verification:
+  Recalculates sequential hashes starting from Genesis Block #0. Any data tampering 
+  immediately flags the ledger status as COMPROMISED.
+
+5.4. Frontend Presentation & Dashboard (frontend/src/App.jsx)
+-------------------------------------------------------------
+* Dual-Tab Ingestion: Audio file uploader (.wav, .mp3, .flac) + Live studio microphone
+  recording using native MediaRecorder with real-time waveform oscillations.
+* Dynamic SVG Radial Risk Gauge: Smooth animated threat meter with color gradients
+  (Green = Safe, Amber = Suspicious, Red = AI Voice Clone).
+* Acoustic Telemetry Cards: Displaying Pitch Micro-Jitter, Spectral Rolloff, 
+  Flatness, and Energy RMS.
+* Blockchain Explorer: Live inspector showing cryptographic block hashes, payload 
+  signatures, and verification badges.
+* Scan History: Filterable historical table with one-click audit clearing.
+
+
+6. ACOUSTIC FORENSIC METRIC REFERENCE
+--------------------------------------------------------------------------------
++--------------------+---------------------------+---------------------------+-----------------------------------------------+
+| Metric             | Biological Human Voice    | Commercial TTS / AI Clone | Forensic Significance                         |
++--------------------+---------------------------+---------------------------+-----------------------------------------------+
+| Pitch Micro-Jitter | 0.015 - 0.045 (organic)   | < 0.008 (rigid spline)    | Involuntary vocal cord tremor cannot be       |
+|                    |                           |                           | mathematically replicated by vocoders.        |
++--------------------+---------------------------+---------------------------+-----------------------------------------------+
+| Spectral Rolloff   | > 3.5 kHz - 8.0 kHz       | < 2.8 kHz - 3.2 kHz       | Low-pass Nyquist filter applied by TTS        |
+|                    |                           |                           | pipelines to eliminate high-frequency hiss.   |
++--------------------+---------------------------+---------------------------+-----------------------------------------------+
+| Spectral Flatness  | Low (0.0001 - 0.001)      | Elevated / Uniform (>0.01)| Neural vocoders produce unnaturally smooth    |
+|                    |                           |                           | harmonic spectra across high bands.           |
++--------------------+---------------------------+---------------------------+-----------------------------------------------+
+| Spectral Contrast  | 15 dB - 45 dB (dynamic)   | 10 dB - 22 dB (compressed)| Human vocal cords create sharp formant peaks; |
+|                    |                           |                           | synthetic speech compresses this range.       |
++--------------------+---------------------------+---------------------------+-----------------------------------------------+
+
+
+7. EXECUTION & DEPLOYMENT COMMANDS
+--------------------------------------------------------------------------------
+1. Backend REST Server:
+   .\venv\Scripts\uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+2. Frontend React Client:
+   cd frontend
+   npm run dev
+
+3. URL Access:
+   http://localhost:5173/
+================================================================================
