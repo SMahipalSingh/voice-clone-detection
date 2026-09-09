@@ -61,65 +61,45 @@ def compute_frequency_acoustic_score(y, sr, metrics):
     1. Pitch Micro-Jitter (Biological vocal cord tremor vs synthetic grid)
     2. Spectral Flatness Index (Neural vocoder smoothing vs natural turbulence)
     3. High-Frequency Spectral Rolloff (Nyquist damping / low-pass vocoder artifacts)
-    4. Formant Energy RMS Dynamics
     """
-    jitter = metrics.get("pitch_micro_jitter", 0.01)
+    jitter = metrics.get("pitch_micro_jitter", 0.015)
     flatness = metrics.get("spectral_flatness", 0.001)
     rolloff = metrics.get("spectral_rolloff_hz", 1500.0)
 
     # 1. Pitch Micro-Jitter (Biological vocal cord tremor vs rigid vocoder grid)
-    # Human speech naturally has jitter between 0.0050 and 0.030.
-    # AI vocoders without prosody models or rigid TTS have jitter < 0.0035.
     if jitter < 0.0035:
-        s_jitter = 0.85 + (0.0035 - jitter) * 40.0
-    elif jitter < 0.0050:
-        s_jitter = 0.40 + (0.0050 - jitter) * 300.0
-    elif jitter <= 0.025:
-        # Safe human zone
-        s_jitter = 0.10 + (jitter - 0.0050) * 5.0
+        s_jitter = 0.85 + (0.0035 - jitter) * 50.0
+    elif jitter < 0.0060:
+        s_jitter = 0.35 + (0.0060 - jitter) * 150.0
+    elif jitter <= 0.060:
+        # Safe human vocal cords zone
+        s_jitter = 0.08
     else:
-        # Slightly noisy or animated speech
-        s_jitter = 0.20 + min(0.30, (jitter - 0.025) * 10.0)
+        # High background room tone
+        s_jitter = 0.20
 
     # 2. Spectral Flatness Index (Neural vocoder smoothing vs formant peaks)
-    # Human speech voiced vowels have strong resonant formants (flatness ~ 0.0003 - 0.0035).
-    # AI neural vocoders produce smoothed harmonic spectra (flatness < 0.00012) or flat noise floor (> 0.010).
-    if flatness < 0.00012:
-        s_flatness = 0.80 + (0.00012 - flatness) * 1000.0
+    if flatness < 0.00015:
+        s_flatness = 0.85
     elif flatness < 0.00030:
-        s_flatness = 0.35 + (0.00030 - flatness) * 2500.0
-    elif flatness <= 0.0035:
-        # Safe human voice zone
-        s_flatness = 0.12
-    elif flatness <= 0.008:
-        s_flatness = 0.25 + (flatness - 0.0035) * 60.0
+        s_flatness = 0.40
+    elif flatness <= 0.009:
+        s_flatness = 0.10
     else:
-        s_flatness = 0.60
+        s_flatness = 0.40
 
     # 3. Spectral Rolloff (High-frequency damping / vocoder cutoff)
-    # AI vocoders often damp frequencies sharply below 750 Hz.
-    # Normal human speech rolloff at 85% energy in 16kHz is 900 - 3500 Hz.
     if rolloff < 750:
-        s_rolloff = 0.75
+        s_rolloff = 0.80
     elif rolloff < 850:
-        s_rolloff = 0.35 + (850 - rolloff) / 250.0
+        s_rolloff = 0.40
     elif rolloff <= 3500:
-        s_rolloff = 0.12
+        s_rolloff = 0.10
     else:
         s_rolloff = 0.20
 
-    # 4. Energy RMS Dynamics
-    s_energy = 0.12
-
-    # Weighted acoustic frequency anomaly index (continuous 0.0 to 1.0)
-    raw_acoustic_score = (
-        (s_jitter * 0.40) +
-        (s_flatness * 0.35) +
-        (s_rolloff * 0.15) +
-        (s_energy * 0.10)
-    )
-
-    return float(np.clip(raw_acoustic_score, 0.05, 0.95))
+    raw = (s_jitter * 0.45) + (s_flatness * 0.35) + (s_rolloff * 0.20)
+    return float(np.clip(raw, 0.05, 0.95))
 
 def predict(audio_path: str) -> dict:
     """
@@ -191,29 +171,32 @@ def predict(audio_path: str) -> dict:
             asv_fake_prob = 0.0
 
     # --- 5. Continuous Multi-Factor Acoustic & Neural Decision Fusion ---
-    # Combines:
-    # 1. asv_fake_prob: 147-dimensional classifier trained on ASVspoof 2021 + Commercial TTS + Human Voices
-    # 2. neural_fake_prob: Pretrained Wav2Vec2 transformer deepfake embedding
-    # 3. acoustic_score: Physical frequency telemetry (pitch micro-jitter, rolloff, flatness)
-    
     rolloff = metrics.get("spectral_rolloff_hz", 3000.0)
     jitter = metrics.get("pitch_micro_jitter", 0.02)
 
-    if neural_fake_prob >= 0.50:
-        # Deepfake / Neural Voice Clone / Acoustic Replay Spoof detected by Wav2Vec2
-        combined_score = (neural_fake_prob * 0.65) + (asv_fake_prob * 0.20) + (acoustic_score * 0.15)
+    # Multi-Factor Decision Matrix:
+    # 1. Master Ensemble / Vocoder Synthetic Detection (Kaggle ASVspoof + Indic Clones):
+    if asv_fake_prob >= 0.60:
+        combined_score = (asv_fake_prob * 0.70) + (max(acoustic_score, 0.20) * 0.15) + (neural_fake_prob * 0.15)
         is_fake = True
-    elif asv_fake_prob >= 0.85 and (rolloff <= 3200.0 or jitter < 0.012 or acoustic_score >= 0.35):
-        # Commercial TTS Vocoder detected (low-pass spectral damping + ML vocoder signature)
-        combined_score = (asv_fake_prob * 0.65) + (acoustic_score * 0.25) + (neural_fake_prob * 0.10)
+    # 2. Neural Deepfake Transformer Detection (corroborated by master ensemble or acoustics):
+    elif neural_fake_prob >= 0.85 and (asv_fake_prob >= 0.40 or acoustic_score >= 0.35):
+        combined_score = (neural_fake_prob * 0.55) + (asv_fake_prob * 0.30) + (acoustic_score * 0.15)
         is_fake = True
-    elif acoustic_score >= 0.60 and asv_fake_prob >= 0.70:
-        # Strong synthetic vocoder acoustic anomalies
-        combined_score = (acoustic_score * 0.50) + (asv_fake_prob * 0.30) + (neural_fake_prob * 0.20)
+    # 3. Physical Frequency Acoustic Synthesis Anomaly:
+    elif acoustic_score >= 0.50:
+        combined_score = (acoustic_score * 0.60) + (asv_fake_prob * 0.25) + (neural_fake_prob * 0.15)
         is_fake = True
+    # 4. Biological Acoustic & Indic Domain Verification Guard:
+    # If physical vocal physics verify authentic vocal cord tremor (jitter >= 0.006 & rolloff >= 850 Hz)
+    # and the Master Ensemble confirms authentic human speech (asv_fake_prob <= 0.30),
+    # suppress Western pretrained transformer out-of-distribution accent bias.
+    elif acoustic_score <= 0.25 and asv_fake_prob <= 0.30 and jitter >= 0.006 and rolloff >= 800.0:
+        combined_score = (asv_fake_prob * 0.55) + (acoustic_score * 0.35) + (min(0.15, neural_fake_prob) * 0.10)
+        is_fake = False
     else:
-        # Authentic Human Voice (Natural vocal micro-prosody & wideband harmonic frequency resonance)
-        combined_score = (neural_fake_prob * 0.45) + (acoustic_score * 0.40) + (min(0.20, asv_fake_prob) * 0.15)
+        # General calibrated multi-factor baseline
+        combined_score = (asv_fake_prob * 0.45) + (acoustic_score * 0.30) + (neural_fake_prob * 0.25)
         is_fake = combined_score >= 0.45
 
     # Dynamic scaling for natural granular variance
@@ -221,8 +204,8 @@ def predict(audio_path: str) -> dict:
     label = "fake" if is_fake else "real"
 
     if is_fake:
-        if neural_fake_prob < 0.30 and asv_fake_prob >= 0.80:
-            analysis_text = f"Synthetic Speech Detected (Text-to-Speech / Neural Vocoder): Low-pass spectral cutoff ({rolloff:.1f} Hz) and vocoder harmonic smoothing detected with {round(asv_fake_prob*100, 1)}% classifier confidence."
+        if asv_fake_prob >= 0.70:
+            analysis_text = f"High Confidence AI Voice Clone / Synthetic Spoof: Multi-spectral vocoder artifacts and neural synthesis signatures detected with {round(asv_fake_prob*100, 1)}% ensemble confidence."
         elif final_confidence >= 0.75:
             analysis_text = f"High Confidence AI Voice Clone: Neural vocoder smoothing, pitch rigidity (jitter: {jitter:.4f}), and synthetic frequency harmonics detected."
         else:

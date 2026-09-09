@@ -28,14 +28,19 @@ def extract_features(audio_path_or_bytes, sr=16000, n_mfcc=20):
             try:
                 y, orig_sr = librosa.load(audio_path_or_bytes, sr=sr)
             except Exception:
-                # Fallback for browser WebM/Opus/OGG containers using pydub
-                from pydub import AudioSegment  # type: ignore # pyrefly: ignore [missing-import]
-                seg = AudioSegment.from_file(audio_path_or_bytes)
-                seg = seg.set_frame_rate(sr).set_channels(1)
-                samples = np.array(seg.get_array_of_samples(), dtype=np.float32)
-                max_val = float(2 ** (seg.sample_width * 8 - 1))
-                y = samples / (max_val + 1e-6)
-                orig_sr = sr
+                try:
+                    y, orig_sr = sf.read(audio_path_or_bytes)
+                    if orig_sr != sr:
+                        y = librosa.resample(y, orig_sr=orig_sr, target_sr=sr)
+                except Exception:
+                    # Fallback for compressed/exotic containers using pydub
+                    from pydub import AudioSegment  # type: ignore # pyrefly: ignore [missing-import]
+                    seg = AudioSegment.from_file(audio_path_or_bytes)
+                    seg = seg.set_frame_rate(sr).set_channels(1)
+                    samples = np.array(seg.get_array_of_samples(), dtype=np.float32)
+                    max_val = float(2 ** (seg.sample_width * 8 - 1))
+                    y = samples / (max_val + 1e-6)
+                    orig_sr = sr
         else:
             y, orig_sr = sf.read(audio_path_or_bytes)
             if orig_sr != sr:
@@ -106,34 +111,23 @@ def extract_features(audio_path_or_bytes, sr=16000, n_mfcc=20):
     rms_mean = float(np.mean(rms))
     rms_std = float(np.std(rms))
 
-    # --- 5. Ultra-Fast Vectorized Pitch (F0) Tracking & Micro-Prosody Jitter ---
-    # Fast autocorrelation pitch tracking (executes in 5-15 milliseconds instead of 30 seconds)
+    # --- 5. Robust YIN Fundamental Frequency (F0) Tracking & Voiced Micro-Prosody Jitter ---
     try:
-        frame_len = 1024
-        hop = 512
-        f0s = []
-        min_period = int(sr / 500) # 500 Hz max pitch (female/child)
-        max_period = int(sr / 65)  # 65 Hz min pitch (deep male)
+        f0 = librosa.yin(y, fmin=65, fmax=500, sr=sr, frame_length=1024, hop_length=256)
+        frame_rms = librosa.feature.rms(y=y, frame_length=1024, hop_length=256)[0]
+        min_rms = np.mean(frame_rms) * 0.25
+        voiced_mask = (frame_rms >= min_rms) & (f0 >= 65) & (f0 <= 500)
+        voiced_f0 = f0[voiced_mask]
         
-        for i in range(0, len(y) - frame_len, hop):
-            frame = y[i:i+frame_len]
-            if np.sum(frame**2) > 1e-4:
-                corr = np.correlate(frame, frame, mode='full')[frame_len-1:]
-                dcorr = np.diff(corr)
-                pos = np.where(dcorr > 0)[0]
-                if len(pos) > 0 and pos[0] < max_period:
-                    search_start = max(min_period, pos[0])
-                    search_end = min(max_period, len(corr))
-                    if search_end > search_start:
-                        peak = np.argmax(corr[search_start:search_end]) + search_start
-                        if peak > 0:
-                            f0s.append(sr / peak)
-
-        voiced_f0 = np.array(f0s)
-        if len(voiced_f0) > 3:
-            f0_mean = float(np.mean(voiced_f0))
+        if len(voiced_f0) > 4:
+            f0_mean = float(np.median(voiced_f0))
             f0_std = float(np.std(voiced_f0))
-            jitter = float(np.mean(np.abs(np.diff(voiced_f0))) / (f0_mean + 1e-6))
+            diffs = np.abs(np.diff(voiced_f0))
+            smooth_diffs = diffs[diffs < 45.0]
+            if len(smooth_diffs) > 2:
+                jitter = float(np.mean(smooth_diffs) / (f0_mean + 1e-6))
+            else:
+                jitter = 0.018
         else:
             f0_mean, f0_std, jitter = 145.0, 8.0, 0.018
     except Exception:
