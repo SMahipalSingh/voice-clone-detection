@@ -21,7 +21,26 @@ var/
 wheels/
 *.egg-info/
 .installed.cfg
-*.egg
+# Environment & Secrets
+.env
+.env.*
+*.env
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+!*.env.example
+kaggle.json
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+*secret*.json
+*credential*.json
+*token*.json
+*apikey*
+*api_key*
 
 # Node / React
 node_modules/
