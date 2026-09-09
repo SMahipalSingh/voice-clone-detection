@@ -3,6 +3,15 @@ import librosa  # type: ignore # pyrefly: ignore [missing-import]
 import soundfile as sf  # type: ignore # pyrefly: ignore [missing-import]
 import os
 
+# Configure bundled ffmpeg for pydub fallback decoding
+try:
+    import pydub  # type: ignore
+    import imageio_ffmpeg  # type: ignore
+    pydub.AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+    pydub.utils.get_prober_name = lambda: imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    pass
+
 def extract_features(audio_path_or_bytes, sr=16000, n_mfcc=20):
     """
     Extracts comprehensive forensic audio features specifically designed to detect:

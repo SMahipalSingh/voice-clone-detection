@@ -7,6 +7,15 @@ from fastapi.staticfiles import StaticFiles
 # Add current directory to path
 sys.path.append(os.path.dirname(__file__))
 
+# Configure bundled ffmpeg executable for pydub decoding
+try:
+    import pydub
+    import imageio_ffmpeg
+    pydub.AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+    pydub.utils.get_prober_name = lambda: imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    pass
+
 from db.database import init_db
 from routers import analyze, history, ledger
 

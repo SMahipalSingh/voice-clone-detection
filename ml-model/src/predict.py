@@ -10,6 +10,15 @@ src_dir = os.path.dirname(os.path.abspath(__file__))
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
+# Configure bundled ffmpeg for pydub fallback decoding
+try:
+    import pydub  # type: ignore
+    import imageio_ffmpeg  # type: ignore
+    pydub.AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+    pydub.utils.get_prober_name = lambda: imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    pass
+
 try:
     from features import extract_features  # type: ignore # pyrefly: ignore [missing-import]
 except ImportError:

@@ -94,12 +94,27 @@ export default function AudioUploader({ onAnalyze, isAnalyzing }) {
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const mime = mediaRecorder.mimeType || 'audio/webm';
-        const blob = new Blob(audioChunksRef.current, { type: mime });
-        setRecordedBlob(blob);
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
-        setAudioUrl(URL.createObjectURL(blob));
+      mediaRecorder.onstop = async () => {
+        try {
+          const rawBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
+          
+          // Convert to uncompressed standard 16-bit PCM WAV for perfect acoustic fidelity
+          const arrayBuffer = await rawBlob.arrayBuffer();
+          const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const audioBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
+          const wavBlob = audioBufferToWav(audioBuffer);
+          try { await decodeCtx.close(); } catch {}
+
+          setRecordedBlob(wavBlob);
+          if (audioUrl) URL.revokeObjectURL(audioUrl);
+          setAudioUrl(URL.createObjectURL(wavBlob));
+        } catch (convErr) {
+          console.warn("WAV conversion fallback:", convErr);
+          const fallbackBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
+          setRecordedBlob(fallbackBlob);
+          if (audioUrl) URL.revokeObjectURL(audioUrl);
+          setAudioUrl(URL.createObjectURL(fallbackBlob));
+        }
       };
 
       mediaRecorder.start(100);
@@ -111,6 +126,70 @@ export default function AudioUploader({ onAnalyze, isAnalyzing }) {
     } catch (err) {
       setRecordingError("Microphone access failed: " + err.message);
     }
+  };
+
+  // Convert AudioBuffer to 16-bit mono PCM WAV Blob
+  const audioBufferToWav = (buffer) => {
+    const numOfChan = 1;
+    const sampleRate = buffer.sampleRate;
+    
+    // Mix to mono
+    let channelData;
+    if (buffer.numberOfChannels > 1) {
+      const ch0 = buffer.getChannelData(0);
+      const ch1 = buffer.getChannelData(1);
+      channelData = new Float32Array(ch0.length);
+      for (let i = 0; i < ch0.length; i++) {
+        channelData[i] = (ch0[i] + ch1[i]) / 2;
+      }
+    } else {
+      channelData = buffer.getChannelData(0);
+    }
+
+    const length = channelData.length * 2 + 44;
+    const out = new DataView(new ArrayBuffer(length));
+
+    const writeString = (view, offset, string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    /* RIFF identifier */
+    writeString(out, 0, 'RIFF');
+    /* file length */
+    out.setUint32(4, 36 + channelData.length * 2, true);
+    /* RIFF type */
+    writeString(out, 8, 'WAVE');
+    /* format chunk identifier */
+    writeString(out, 12, 'fmt ');
+    /* format chunk length */
+    out.setUint32(16, 16, true);
+    /* sample format (1 = PCM) */
+    out.setUint16(20, 1, true);
+    /* channel count */
+    out.setUint16(22, numOfChan, true);
+    /* sample rate */
+    out.setUint32(24, sampleRate, true);
+    /* byte rate */
+    out.setUint32(28, sampleRate * 2, true);
+    /* block align */
+    out.setUint16(32, 2, true);
+    /* bits per sample */
+    out.setUint16(34, 16, true);
+    /* data chunk identifier */
+    writeString(out, 36, 'data');
+    /* data chunk length */
+    out.setUint32(40, channelData.length * 2, true);
+
+    // Write 16-bit PCM samples with clamping
+    let offset = 44;
+    for (let i = 0; i < channelData.length; i++, offset += 2) {
+      const s = Math.max(-1, Math.min(1, channelData[i]));
+      out.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+
+    return new Blob([out], { type: 'audio/wav' });
   };
 
   // --- Stop Recording ---
@@ -129,7 +208,7 @@ export default function AudioUploader({ onAnalyze, isAnalyzing }) {
     }
 
     if (audioContextRef.current) {
-      audioContextRef.current.close();
+      audioContextRef.current.close().catch(() => {});
     }
 
     setIsRecording(false);
@@ -170,8 +249,9 @@ export default function AudioUploader({ onAnalyze, isAnalyzing }) {
     if (activeTab === "upload" && selectedFile) {
       onAnalyze(selectedFile, "General Audio", selectedFile.name);
     } else if (activeTab === "mic" && recordedBlob) {
-      const ext = recordedBlob.type.includes('mp4') ? 'mp4' : (recordedBlob.type.includes('wav') ? 'wav' : 'webm');
-      onAnalyze(recordedBlob, "General Audio", `Live_Voice_Capture_${Date.now()}.${ext}`);
+      const isWav = recordedBlob.type.includes('wav');
+      const filename = isWav ? `Live_Voice_Capture_${Date.now()}.wav` : `Live_Voice_Capture_${Date.now()}.webm`;
+      onAnalyze(recordedBlob, "General Audio", filename);
     }
   };
 
