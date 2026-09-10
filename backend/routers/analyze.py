@@ -2,7 +2,7 @@ import os
 import sys
 import uuid
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 
@@ -53,7 +53,7 @@ async def analyze_audio(
 
         # 2. Context-Aware Risk Calculation
         risk = compute_risk(prediction["confidence"], scenario, prediction["metrics"])
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
 
         # 3. Create Immutable Blockchain Audit Block
         block = add_block(

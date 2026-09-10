@@ -6,7 +6,7 @@ from predict import predict
 
 def benchmark():
     print("=" * 85)
-    print("VOICESHIELD MULTI-DOMAIN ACOUSTIC & NEURAL BENCHMARK")
+    print("SWARX MULTI-DOMAIN ACOUSTIC & NEURAL BENCHMARK")
     print("Kaggle ASVspoof + Indian Live Mic + Indic AI Clones + Authentic Presets")
     print("=" * 85)
 

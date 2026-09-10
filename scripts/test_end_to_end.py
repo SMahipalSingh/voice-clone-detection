@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("backend"))
 
 def test_api():
-    print("Testing VoiceShield System End-to-End...")
+    print("Testing SwarX System End-to-End...")
     
     # Import FastAPI TestClient
     from fastapi.testclient import TestClient

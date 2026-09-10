@@ -4,12 +4,13 @@ import numpy as np
 import soundfile as sf
 import joblib
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.metrics import classification_report, roc_auc_score
 
 sys.path.insert(0, os.path.abspath('ml-model/src'))
+# pyrefly: ignore [missing-import]
 from features import extract_features
 
 def build_indic_training_pipeline(num_samples_per_class=100):
@@ -50,7 +51,9 @@ def build_indic_training_pipeline(num_samples_per_class=100):
     # 2. Generate Corresponding Synthetic Indic TTS / Clones
     print("\n[Step 2/4] Synthesizing Indic AI Clones (gTTS / Vocoder Simulation)...")
     fake_paths = []
+    # pyrefly: ignore [missing-import]
     from gtts import gTTS
+    
 
     indic_prompts = [
         ("hindi_urgent_transfer", "नमस्ते, यह बैंक से अत्यंत महत्वपूर्ण सत्यापन कॉल है।", "hi"),
@@ -145,7 +148,7 @@ def build_indic_training_pipeline(num_samples_per_class=100):
         "languages_supported": ["Indian English", "Hindi", "Indic Multi-Accent", "Global English"],
         "cross_val_accuracy": round(mean_acc, 4),
         "total_training_samples": int(X.shape[0]),
-        "trained_at": datetime.utcnow().isoformat()
+        "trained_at": datetime.now(timezone.utc).isoformat()
     }
 
     with open("ml-model/models/model_metadata.json", "w") as f:

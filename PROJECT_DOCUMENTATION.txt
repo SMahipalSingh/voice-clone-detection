@@ -1,11 +1,11 @@
 ================================================================================
-VOICESHIELD: AI VOICE CLONE & DEEPFAKE DETECTION PLATFORM
+SWARX: AI VOICE CLONE & DEEPFAKE DETECTION PLATFORM
 Complete System Architecture, Design Specification & DFD (Level 0 - 1)
 ================================================================================
 
 1. EXECUTIVE PROJECT OVERVIEW
 --------------------------------------------------------------------------------
-VoiceShield is an enterprise-grade cyber-forensic platform designed to detect 
+SwarX is an enterprise-grade cyber-forensic platform designed to detect 
 AI-synthesized voice clones, commercial Text-to-Speech (TTS), and physical replay 
 attacks in real-time, while establishing an immutable, tamper-evident SHA-256 
 Blockchain Audit Ledger for every forensic scan.
@@ -114,7 +114,7 @@ The Core Problem Solved:
       v               |    Ledger Verification Status
    +------------------------------------------------------------+
    |                                                            |
-   |              0.0 VOICESHIELD SYSTEM                        |
+   |              0.0 SWARX SYSTEM                              |
    |     AI Voice Clone & Deepfake Detection Platform           |
    |                                                            |
    +------------------------------------------------------------+

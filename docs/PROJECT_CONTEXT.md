@@ -1,7 +1,7 @@
-# VoiceShield: Project Context & Architectural Documentation
+# SwarX: Project Context & Architectural Documentation
 
 ## Executive Overview
-**VoiceShield** is an enterprise-grade AI voice clone & deepfake audio detection platform with a cryptographic SHA-256 blockchain audit ledger. It is engineered to solve voice authorization fraud (e.g. CEO voice scams, unauthorized wire transfers, emergency extortion scams) by combining multi-spectral acoustic feature extraction with an immutable proof-of-detection chain.
+**SwarX** is an enterprise-grade AI voice clone & deepfake audio detection platform with a cryptographic SHA-256 blockchain audit ledger. It is engineered to solve voice authorization fraud (e.g. CEO voice scams, unauthorized wire transfers, emergency extortion scams) by combining multi-spectral acoustic feature extraction with an immutable proof-of-detection chain.
 
 ---
 

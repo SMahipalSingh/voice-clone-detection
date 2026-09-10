@@ -13,7 +13,7 @@ from features import extract_features
 
 def train_master_ensemble():
     print("=" * 75)
-    print("VOICESHIELD MULTI-TIER MASTER ENSEMBLE TRAINING PIPELINE")
+    print("SWARX MULTI-TIER MASTER ENSEMBLE TRAINING PIPELINE")
     print("Kaggle ASVspoof + Indian Human Mic + Modern Neural Clones + Replay Attacks")
     print("=" * 75)
 

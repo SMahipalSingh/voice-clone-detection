@@ -1,11 +1,11 @@
-# VoiceShield: AI Voice Clone & Deepfake Detection Platform
+# SwarX: AI Voice Clone & Deepfake Detection Platform
 ### Complete System Architecture, Design Specification & DFD (Level 0 – 1)
 
 ---
 
 ## 1. Executive Project Overview
 
-**VoiceShield** is an enterprise-grade cyber-forensic platform designed to detect **AI-synthesized voice clones, commercial Text-to-Speech (TTS), and physical replay attacks** in real-time, while establishing an immutable, tamper-evident **SHA-256 Blockchain Audit Ledger** for every forensic scan.
+**SwarX** is an enterprise-grade cyber-forensic platform designed to detect **AI-synthesized voice clones, commercial Text-to-Speech (TTS), and physical replay attacks** in real-time, while establishing an immutable, tamper-evident **SHA-256 Blockchain Audit Ledger** for every forensic scan.
 
 ### The Core Problem Solved:
 * **Generative Voice Clones (ElevenLabs, RVC, VALL-E):** Highly realistic vocal duplication used in CEO fraud, banking authorization bypass, and social engineering.
@@ -98,7 +98,7 @@ flowchart TB
 flowchart LR
     User["Security Analyst / User"]
     Mic["Microphone / Audio Source"]
-    System(("0.0 <br/> VoiceShield <br/> AI Voice Clone & <br/> Deepfake Detection System"))
+    System(("0.0 <br/> SwarX <br/> AI Voice Clone & <br/> Deepfake Detection System"))
     
     User -->|"Upload Audio File (.wav, .mp3, .flac)"| System
     Mic -->|"Stream Live Voice Recording (Blob)"| System

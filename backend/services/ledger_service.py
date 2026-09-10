@@ -1,17 +1,18 @@
+from typing import Any
 import hashlib
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 GENESIS_HASH = hashlib.sha256(b"genesis_block_voice_clone_detector_immutable_ledger").hexdigest()
 
 # In-memory ledger chain (can also be saved to SQLite for persistence)
-chain = [
+chain: list[dict[str, Any]] = [
     {
         "index": 0,
         "prev_hash": "0" * 64,
         "hash": GENESIS_HASH,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "filename": "GENESIS",
         "risk_score": 0,
         "verdict": "GENESIS_NODE",
@@ -46,13 +47,13 @@ def add_block(risk_score: int, verdict: str, timestamp: str, filename: str = "au
     payload = compute_block_payload(prev_hash, risk_score, verdict, timestamp, filename, audio_sha256, scenario)
     block_hash = hashlib.sha256(payload.encode()).hexdigest()
 
-    block = {
+    block: dict[str, Any] = {
         "index": len(chain),
         "prev_hash": prev_hash,
         "hash": block_hash,
         "timestamp": timestamp,
         "filename": filename,
-        "risk_score": int(risk_score),
+        "risk_score": risk_score,
         "verdict": verdict,
         "scenario": scenario,
         "audio_sha256": audio_sha256,

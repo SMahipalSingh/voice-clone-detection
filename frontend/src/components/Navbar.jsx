@@ -30,7 +30,7 @@ export default function Navbar({
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <h1 style={{ fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.02em" }}>
-                VOICE<span className="gradient-text">SHIELD</span>
+                SWAR<span className="gradient-text">X</span>
               </h1>
               <span className="badge-blockchain" style={{ fontSize: "0.68rem" }}>
                 <Link2 size={11} /> SHA-256 LEDGER

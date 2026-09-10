@@ -205,7 +205,7 @@ export default function App() {
         color: "var(--text-muted)",
         fontSize: "0.75rem"
       }}>
-        VoiceShield Frequency-Based Acoustic Detection & SHA-256 Blockchain Audit Layer
+        SwarX Frequency-Based Acoustic Detection & SHA-256 Blockchain Audit Layer
       </footer>
 
     </div>

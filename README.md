@@ -1,4 +1,4 @@
-# VoiceShield — AI Voice Clone Detector & Blockchain Audit Registry
+# SwarX — AI Voice Clone Detector & Blockchain Audit Registry
 
 > **Generalized AI Voice Deepfake Detection with 147 Forensic Spectral Features & SHA-256 Blockchain Audit Layer**
 

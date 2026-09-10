@@ -63,7 +63,7 @@ export default function PitchModal({ isOpen, onClose }) {
             </span>
           </div>
           <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)" }}>
-            VoiceShield: Generalized AI Voice Clone Detection & Blockchain Registry
+            SwarX: Generalized AI Voice Clone Detection & Blockchain Registry
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginTop: "4px" }}>
             Comprehensive architectural breakdown and judge Q&A guide.
@@ -79,7 +79,7 @@ export default function PitchModal({ isOpen, onClose }) {
             Standard spoof classifiers trained solely on simple MFCC averages or replay benchmarks (like ASVspoof PA alone) frequently classify modern neural clones (ElevenLabs, Tortoise, RVC) as <strong>"SAFE"</strong>. This occurs because neural vocoders generate clean audio without room reverberation.
           </p>
           <p style={{ fontSize: "0.82rem", color: "#34d399", fontWeight: 600 }}>
-            ✓ How VoiceShield Solves This: We extract 147 forensic acoustic features—including pitch micro-prosody jitter, spectral flatness, high-frequency vocoder Nyquist damping, and spectral contrast derivatives.
+            ✓ How SwarX Solves This: We extract 147 forensic acoustic features—including pitch micro-prosody jitter, spectral flatness, high-frequency vocoder Nyquist damping, and spectral contrast derivatives.
           </p>
         </div>
 

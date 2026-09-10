@@ -9,10 +9,12 @@ sys.path.append(os.path.dirname(__file__))
 
 # Configure bundled ffmpeg executable for pydub decoding
 try:
+    from typing import Any, cast
     import pydub
+    import pydub.utils
     import imageio_ffmpeg
-    pydub.AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
-    pydub.utils.get_prober_name = lambda: imageio_ffmpeg.get_ffmpeg_exe()
+    pydub.AudioSegment.converter = cast(Any, imageio_ffmpeg.get_ffmpeg_exe())
+    pydub.utils.get_prober_name = cast(Any, lambda: imageio_ffmpeg.get_ffmpeg_exe())
 except Exception:
     pass
 
@@ -23,7 +25,7 @@ from routers import analyze, history, ledger
 init_db()
 
 app = FastAPI(
-    title="Voice Clone Detector & Blockchain Ledger",
+    title="SwarX — Voice Clone Detector & Blockchain Ledger",
     description="Forensic AI Voice Clone / Deepfake Detection System with SHA-256 Blockchain Audit Trail",
     version="1.0.0"
 )
@@ -55,7 +57,7 @@ app.include_router(ledger.router)
 def health_check():
     return {
         "status": "online",
-        "service": "Voice Clone Detector Engine",
+        "service": "SwarX Engine",
         "version": "1.0.0",
         "blockchain_ledger": "ACTIVE",
         "database": "CONNECTED"
@@ -64,7 +66,7 @@ def health_check():
 @app.get("/")
 def root():
     return {
-        "message": "Voice Clone Detector API is running.",
+        "message": "SwarX API is running.",
         "docs": "/docs",
         "health": "/health"
     }
